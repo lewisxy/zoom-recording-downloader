@@ -1,0 +1,34 @@
+{
+  "name": "Zoom Recording Downloader",
+  "version": "1.0",
+  "description": "Download zoom recordings from your browser",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "page_action": {
+    "default_popup": "popup.html",
+    "default_icon": "images/icon.svg"
+  },
+  "icons": {
+    "16": "images/icon.svg",
+    "32": "images/icon.svg",
+    "48": "images/icon.svg",
+    "128": "images/icon.svg"
+  },
+  "browser_action": {
+    "default_icon": "images/icon.svg",
+    "default_title": "Zoom Recording Downloader",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "downloads",
+    "webRequest",
+    "webRequestBlocking",
+    "https://*.zoom.us/"
+  ],
+  "manifest_version": 2
+}
