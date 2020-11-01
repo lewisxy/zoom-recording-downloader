@@ -6,6 +6,8 @@ Download zoom cloud recordings to your computer.
 This extension will download videos from pages matching
 > https://<company_name>.zoom.us/rec/play/...
 
+![screenshot](screenshots/zoom-recording-downloader.png)
+
 ## Usage
 When download is available, there will be a number showed
 up on the icon of this extension on the tool bar. Click
