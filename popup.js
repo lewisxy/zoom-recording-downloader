@@ -24,7 +24,7 @@ function updateUI() {
     const downloadUrl = data[k].url;
 
     let info = document.createElement("h5");
-    info.innerHTML = new URL(downloadUrl).pathname.split("/").pop();
+    info.textContent = new URL(downloadUrl).pathname.split("/").pop();
     // info.onclick = function() {
     //   download_func2(downloadUrl);
     // }
@@ -51,7 +51,7 @@ function updateUI() {
 let parent = document.getElementById('download');
 let placeHolderMsg = document.createElement("h2");
 placeHolderMsg.id = "placeholder";
-placeHolderMsg.innerHTML = "No Download Available";
+placeHolderMsg.textContent = "No Download Available";
 parent.appendChild(placeHolderMsg);
 getCurrentDataAndUpdateUI();
 console.log("page loaded");

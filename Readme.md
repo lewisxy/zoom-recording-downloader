@@ -1,5 +1,7 @@
 # Zoom Recording Downloader
 
+Project link: https://github.com/lewisxy/zoom-recording-downloader/
+
 Download zoom cloud recordings to your computer.
 This extension will download videos from pages matching
 > https://<company_name>.zoom.us/rec/play/...
