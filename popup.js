@@ -62,9 +62,10 @@ function download_func2(url) {
     //filename: 'out.mp4',
     url: url,
     saveAs: true,
-    method: "GET",
-    headers: [{name: "x-internal-replay", value: "1"}] // case sensitive
-    //headers: [{name: "x-internal-header", value: "Referer,Cookie"}]
+    // TODO: do more experiments regarding this option
+    //incognito: true, // this is needed to download in private browsing mode
+    //headers: [],
+    method: "GET"
   }
   browser.downloads.download(options, function(downloadId) {
     console.log(`download started with id ${downloadId}`)

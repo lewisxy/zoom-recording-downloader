@@ -55,62 +55,46 @@ browser.webRequest.onBeforeSendHeaders.addListener(
       updateUI();
     } else {
       // possibly the download request
-      const internalHeader = /x-internal-(.*)/;
-      let additionalHeaderNames = [];
-      for (let i = 0; i < details.requestHeaders.length; ++i) {
-        let x = details.requestHeaders[i];
-        let res = internalHeader.exec(x.name);
-        if (res) {
-          let cmd = res[1];
-          console.log(`internal header '${cmd}' found`);
-          if (cmd === "header") { // add specific headers
-            console.log(x.value, x.value.split(/[\t ]*,[\t ]*/));
-            additionalHeaderNames = additionalHeaderNames.concat(x.value.split(/[\t ]*,[\t ]*/));
-          }
-          if (cmd === "replay") { // replay the request
-            let savedReqest = record[details.url];
-            if (!savedReqest) {
-              console.log(`cannot found saved request for url ${details.url}`);
-              return;
-            }
-            console.log("replay the previous request");
-            return {requestHeaders: savedReqest.requestHeaders};
-          }
-          // remove all intrenal headers
-          details.requestHeaders.splice(i, 1);
-        }
-      }
-      console.log(additionalHeaderNames);
-
       let savedReqest = record[details.url];
       if (!savedReqest) {
         console.log(`cannot found saved request for url ${details.url}`);
         return;
       }
-
-      // add new headers
-      let newHeaders = {};
-      for (let x of additionalHeaderNames) {
-        const savedHeaders = ArrayToObject(savedReqest.requestHeaders);
-        if (savedHeaders[x]) {
-          newHeaders[x] = savedHeaders[x];
-          console.log(`found ${x} in saved requests`);
-        } else {
-          console.log(`unable to find header ${x} from last saved request`);
-        }
-      }
-      newHeaders = objectToArray(newHeaders);
-      // assuming no duplicates
-      console.log(newHeaders);
-      details.requestHeaders = details.requestHeaders.concat(newHeaders);
-      console.log("header after modification", details.requestHeaders);
-      return {requestHeaders: details.requestHeaders};
+      console.log("replay the previous request");
+      // overwrite range keyword
+      modifyHeader({range: "bytes=0-"}, savedReqest.requestHeaders);
+      return {requestHeaders: savedReqest.requestHeaders};
     }
     // console.log(details);
   },
   {urls: ["https://ssrweb.zoom.us/*"]},
   ["requestHeaders"/*, "extraHeaders"*/, "blocking"]
 );
+
+// modify a headers using mod
+// mod is an object those key-value represents header name and content
+// only 1 header in headers (if there are duplicates) will be modified
+// (modifying more than 1 header with the same name is not currently supported)
+// if header in mod is not present in headers, it will be injected
+// mod will be modified !!!
+function modifyHeader(mod, headers) {
+  console.log("before modification ", headers);
+  for (let i = 0; i < headers.length; ++i) {
+    // use case insensitive match
+    if (headers[i].name.toLowerCase() in mod) {
+      //console.log(`${headers[i].name} in mod`);
+      headers[i].value = mod[headers[i].name.toLowerCase()];
+      delete mod[headers[i].name];
+    } else {
+      console.log(`${headers[i].name} not in mod`);
+    }
+    //headers.splice(i, 1);
+  }
+  for (let x of Object.keys(mod)) {
+    headers.push({name: x, value: mod[x]});
+  }
+  //console.log("after modification ", headers);
+}
 
 // { <k>: <v> } --> [(name: k, value: v), ...]
 function objectToArray(obj) {
