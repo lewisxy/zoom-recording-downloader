@@ -3,6 +3,17 @@
 // this page (script) get reloaded every time when popup is opened
 let data = undefined;
 
+let placeHolderMsg = document.createElement("p");
+placeHolderMsg.id = "placeholder";
+placeHolderMsg.textContent = "Nothing to download. Please open a Zoom recording to detect the download link.";
+placeHolderMsg.classList.add("invalid")
+
+let parent = document.getElementById('download');
+parent.appendChild(placeHolderMsg);
+
+getCurrentDataAndUpdateUI();
+console.log("page loaded");
+
 function getCurrentDataAndUpdateUI() {
   browser.storage.local.get("data", function(d) {
     data = d.data;
@@ -47,14 +58,6 @@ function updateUI() {
   }
   parent.appendChild(ul);
 }
-
-let parent = document.getElementById('download');
-let placeHolderMsg = document.createElement("h2");
-placeHolderMsg.id = "placeholder";
-placeHolderMsg.textContent = "No Download Available";
-parent.appendChild(placeHolderMsg);
-getCurrentDataAndUpdateUI();
-console.log("page loaded");
 
 function download_func2(url) {
   console.log("initiate download", url);

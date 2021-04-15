@@ -2,6 +2,15 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+body {
+  width: 20em;
+  padding: 30px;
+}
+
+p.invalid {
+  color: gray;
+}
+
 button {
   outline: none;
   border: none;
@@ -9,12 +18,6 @@ button {
   background-repeat: no-repeat;
 
   width: 50px;
-}
-
-#placeholder {
-  text-align: center;
-  margin-left:10%;
-  margin-right:10%;
 }
 
 h5 {
