@@ -46,8 +46,16 @@ function saveActiveRequest(req, func) {
 }
 
 function updateUI() {
-  // we don't care when the is update completed
-  browser.browserAction.setBadgeText({text: Object.keys(data).length.toString()}, undefined);
+  // Set badge
+  browser.storage.local.get({"showBadge": true}, function(d) {
+    log("showBadge", d.showBadge);
+    let text = null;
+    if (d.showBadge && Object.keys(data).length > 0)
+      text = Object.keys(data).length.toString();
+    log("text", text);
+    browser.browserAction.setBadgeText({text: text});
+  })
+  // Reload popup when it's open
   browser.runtime.sendMessage({"reload": "1"});
 }
 

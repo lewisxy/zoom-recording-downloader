@@ -11,7 +11,7 @@ body {
 }
 
 p.invalid {
-  margin: 30px;
+  margin: 15px;
   width: 300px;
   color: gray;
 }
@@ -62,4 +62,27 @@ span.item {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+#options {
+  margin: 15px;
+  margin-bottom: 30px;
+  padding: 0;
+}
+
+#options span.btn {
+  margin-right: 15px;
+  padding: 5px 15px;
+  border: 1px solid rgb(20, 119, 212);
+  color: rgb(20, 119, 212);
+  border-radius: 4px;
+
+  transition-duration: 0.5s;
+
+  cursor: pointer;
+}
+
+#options span.btn:hover {
+  background-color: rgb(20, 119, 212);
+  color:white
 }

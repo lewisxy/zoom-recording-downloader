@@ -11,6 +11,16 @@ let data = undefined;
 getCurrentDataAndUpdateUI();
 log("page loaded");
 
+document.getElementById("clear").onclick = function(ev) {
+  browser.storage.local.set({"data": {}}, getCurrentDataAndUpdateUI);
+}
+
+document.getElementById("badgeOption").onclick = function(ev) {
+  browser.storage.local.get({"showBadge": true}, function(data) {
+    browser.storage.local.set({"showBadge": !data.showBadge}, getCurrentDataAndUpdateUI)
+  })
+}
+
 function getCurrentDataAndUpdateUI() {
   browser.storage.local.get("data", function(d) {
     data = d.data;
@@ -24,6 +34,19 @@ function updateUI() {
   // Clear frame
   let mainFrame = document.getElementById('download');
   mainFrame.innerHTML = "";
+
+  // Set badge
+  browser.storage.local.get({"showBadge": true}, function(d) {
+    log("showBadge", d.showBadge);
+    document.getElementById("badgeOption").innerText =
+      d.showBadge? "Hide Badge": "Show Badge";
+
+    let text = null;
+    if (d.showBadge && Object.keys(data).length > 0)
+      text = Object.keys(data).length.toString();
+    log("text", text);
+    browser.browserAction.setBadgeText({text: text});
+  })
 
   // Empty case
   if (Object.keys(data).length === 0) {
