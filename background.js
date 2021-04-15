@@ -1,5 +1,10 @@
 'use strict';
 
+function log(...objects) {
+  // Uncomment this line for debugging
+  // console.log(...objects);
+}
+
 // persistent storage for the session
 // map from browser url to download info
 let data = {};
@@ -28,14 +33,14 @@ function saveActiveRequest(req, func) {
     delete record[oldDownloadUrl];
     // check if delete failed, shouldn't happen
     if (Object.keys(record).length !== Object.keys(data).length - 1) {
-      console.log("internal invarient check failed, something is wrong");
+      log("internal invarient check failed, something is wrong");
     }
   }
   record[savedObject.url] = savedObject;
   data[savedObject.originUrl] = savedObject;
   // check invarient again, data and record should have the same size
   if (Object.keys(record).length !== Object.keys(data).length) {
-    console.log("internal invarient check failed 2, something is wrong");
+    log("internal invarient check failed 2, something is wrong");
   }
   browser.storage.local.set({"data": data}, func);
 }
@@ -48,24 +53,24 @@ function updateUI() {
 
 browser.webRequest.onBeforeSendHeaders.addListener(
   function(details) {
-    console.log(details);
+    log(details);
     if (details.type === "media") {
       // real request (sent from browser)
-      saveActiveRequest(details, function() {console.log("data updated")}); // don't care when will it finished.
+      saveActiveRequest(details, function() {log("data updated")}); // don't care when will it finished.
       updateUI();
     } else {
       // possibly the download request
       let savedReqest = record[details.url];
       if (!savedReqest) {
-        console.log(`cannot found saved request for url ${details.url}`);
+        log(`cannot found saved request for url ${details.url}`);
         return;
       }
-      console.log("replay the previous request");
+      log("replay the previous request");
       // overwrite range keyword
       modifyHeader({range: "bytes=0-"}, savedReqest.requestHeaders);
       return {requestHeaders: savedReqest.requestHeaders};
     }
-    // console.log(details);
+    // log(details);
   },
   {urls: ["https://ssrweb.zoom.us/*"]},
   ["requestHeaders"/*, "extraHeaders"*/, "blocking"]
@@ -78,22 +83,22 @@ browser.webRequest.onBeforeSendHeaders.addListener(
 // if header in mod is not present in headers, it will be injected
 // mod will be modified !!!
 function modifyHeader(mod, headers) {
-  console.log("before modification ", headers);
+  log("before modification ", headers);
   for (let i = 0; i < headers.length; ++i) {
     // use case insensitive match
     if (headers[i].name.toLowerCase() in mod) {
-      //console.log(`${headers[i].name} in mod`);
+      //log(`${headers[i].name} in mod`);
       headers[i].value = mod[headers[i].name.toLowerCase()];
       delete mod[headers[i].name];
     } else {
-      console.log(`${headers[i].name} not in mod`);
+      log(`${headers[i].name} not in mod`);
     }
     //headers.splice(i, 1);
   }
   for (let x of Object.keys(mod)) {
     headers.push({name: x, value: mod[x]});
   }
-  //console.log("after modification ", headers);
+  //log("after modification ", headers);
 }
 
 // { <k>: <v> } --> [(name: k, value: v), ...]

@@ -1,5 +1,10 @@
 'use strict';
 
+function log(...objects) {
+  // Uncomment this line for debugging
+  // console.log(...objects);
+}
+
 // this page (script) get reloaded every time when popup is opened
 let data = undefined;
 
@@ -12,12 +17,12 @@ let parent = document.getElementById('download');
 parent.appendChild(placeHolderMsg);
 
 getCurrentDataAndUpdateUI();
-console.log("page loaded");
+log("page loaded");
 
 function getCurrentDataAndUpdateUI() {
   browser.storage.local.get("data", function(d) {
     data = d.data;
-    console.log("data", d)
+    log("data", d)
     updateUI();
   });
 }
@@ -60,7 +65,7 @@ function updateUI() {
 }
 
 function download_func2(url) {
-  console.log("initiate download", url);
+  log("initiate download", url);
   const options = {
     //filename: 'out.mp4',
     url: url,
@@ -71,14 +76,14 @@ function download_func2(url) {
     method: "GET"
   }
   browser.downloads.download(options, function(downloadId) {
-    console.log(`download started with id ${downloadId}`)
+    log(`download started with id ${downloadId}`)
   });
 }
 
 // listen to background update
 browser.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    console.log(request);
+    log(request);
     if (request.reload) {
       window.location.reload();
     }
