@@ -2,19 +2,11 @@
 
 function log(...objects) {
   // Uncomment this line for debugging
-  // console.log(...objects);
+  console.log(...objects);
 }
 
 // this page (script) get reloaded every time when popup is opened
 let data = undefined;
-
-let placeHolderMsg = document.createElement("p");
-placeHolderMsg.id = "placeholder";
-placeHolderMsg.textContent = "Nothing to download. Please open a Zoom recording to detect the download link.";
-placeHolderMsg.classList.add("invalid")
-
-let parent = document.getElementById('download');
-parent.appendChild(placeHolderMsg);
 
 getCurrentDataAndUpdateUI();
 log("page loaded");
@@ -27,41 +19,48 @@ function getCurrentDataAndUpdateUI() {
   });
 }
 
-// called when data is available or updated
+// called when download items are available or updated
 function updateUI() {
+  // Clear frame
+  let mainFrame = document.getElementById('download');
+  mainFrame.innerHTML = "";
+
+  // Empty case
   if (Object.keys(data).length === 0) {
-    placeHolderMsg.hidden = false;
+    let placeHolderMsg = document.createElement("p");
+    placeHolderMsg.id = "placeholder";
+    placeHolderMsg.textContent = "Nothing to download. Please open a Zoom recording to detect the download link.";
+    placeHolderMsg.classList.add("invalid")
+
+    mainFrame.appendChild(placeHolderMsg);
     return;
-  } else {
-    placeHolderMsg.hidden = true;
   }
-  let ul = document.createElement("ul");
+
+  // Non-empty case
+  let downloadList = document.createElement("ul");
   for (let k of Object.keys(data)) {
     const downloadUrl = data[k].url;
 
-    let info = document.createElement("h5");
+    let info = document.createElement("span");
+    info.classList.add("item");
     info.textContent = new URL(downloadUrl).pathname.split("/").pop();
-    // info.onclick = function() {
-    //   download_func2(downloadUrl);
-    // }
 
-    let downloadBtn = document.createElement("button");
-    //downloadBtn.id = "";
-    downloadBtn.onclick = function() {
+    let downloadIcon = document.createElement("span");
+    downloadIcon.classList.add("download");
+    downloadIcon.onclick = function() {
       download_func2(downloadUrl);
     }
 
-    // let subParent = document.createElement("div");
-    // subParent.appendChild(info);
-    // subParent.appendChild(downloadBtn);
+    let button = document.createElement("a");
+    button.appendChild(info);
+    button.appendChild(downloadIcon);
 
-    let container = document.createElement("li");
-    container.appendChild(info);
-    container.appendChild(downloadBtn);
-    //container.appendChild(subParent);
-    ul.appendChild(container);
+    let item = document.createElement("li");
+    item.appendChild(button);
+
+    downloadList.appendChild(item);
   }
-  parent.appendChild(ul);
+  mainFrame.appendChild(downloadList);
 }
 
 function download_func2(url) {
