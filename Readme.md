@@ -2,6 +2,16 @@
 
 Project link: https://github.com/lewisxy/zoom-recording-downloader/
 
+-----
+## Update 4/16/2021
+We found an alternative method to download zoom recordings using the browser's builtin video download functionality. 
+ - Firefox: Hold SHIFT and right click the video, click on "Save Video As..." (no plugin needed).
+ - Chrome: Find a plugin that bypass right click restriction (for example, [this plugin](https://chrome.google.com/webstore/detail/allow-right-click/hompjdfbfmmmgflfjdlnkohcplmboaeo)), and then right click the video, click on "Save Video As..."
+
+Enjoy!
+
+-----
+
 Download zoom cloud recordings to your computer.
 This extension will download videos from pages matching
 > https://<company_name>.zoom.us/rec/play/...
