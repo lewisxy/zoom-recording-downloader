@@ -1,6 +1,6 @@
 {
   "name": "Zoom Recording Downloader",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Download zoom recordings from your browser",
   "background": {
     "scripts": ["background.js"],
