@@ -70,13 +70,13 @@ function updateUI() {
 
     let downloadIcon = document.createElement("span");
     downloadIcon.classList.add("download");
-    downloadIcon.onclick = function() {
-      download_func2(downloadUrl);
-    }
 
     let button = document.createElement("a");
     button.appendChild(info);
     button.appendChild(downloadIcon);
+    button.onclick = function() {
+      download_func2(downloadUrl);
+    }
 
     let item = document.createElement("li");
     item.appendChild(button);
