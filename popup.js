@@ -2,11 +2,13 @@
 
 function log(...objects) {
   // Uncomment this line for debugging
-  console.log(...objects);
+  // console.log(...objects);
 }
 
 // this page (script) get reloaded every time when popup is opened
 let data = undefined;
+
+let transcriptData = undefined;
 
 getCurrentDataAndUpdateUI();
 log("page loaded");
@@ -25,6 +27,11 @@ function getCurrentDataAndUpdateUI() {
   browser.storage.local.get("data", function(d) {
     data = d.data;
     log("data", d)
+    updateUI();
+  });
+  browser.storage.local.get("transcriptData", function(d) {
+    transcriptData = d.transcriptData;
+    log("transcriptData", d)
     updateUI();
   });
 }
@@ -63,39 +70,63 @@ function updateUI() {
   let downloadList = document.createElement("ul");
   for (let k of Object.keys(data)) {
     const downloadUrl = data[k].url;
+    const transcriptUrl = transcriptData ? (transcriptData[k] ? transcriptData[k].url : undefined) : undefined;
+    const videofilename = new URL(downloadUrl).pathname.split("/").pop();
 
     let info = document.createElement("span");
-    info.classList.add("item");
-    info.textContent = new URL(downloadUrl).pathname.split("/").pop();
+    info.classList.add("info");
+    info.textContent = videofilename;
 
-    let downloadIcon = document.createElement("span");
-    downloadIcon.classList.add("download");
+    // let downloadIcon = document.createElement("span");
+    // downloadIcon.classList.add("download");
 
-    let button = document.createElement("a");
-    button.appendChild(info);
-    button.appendChild(downloadIcon);
-    button.onclick = function() {
+    let videoDownloadBtn = document.createElement("span");
+    videoDownloadBtn.classList.add("btn");
+    // videoDownloadBtn.appendChild(downloadIcon);
+    videoDownloadBtn.onclick = function() {
       download_func2(downloadUrl);
+    }
+    videoDownloadBtn.textContent = "Download Video";
+
+    let transcriptDownloadBtn = document.createElement("span");
+    transcriptDownloadBtn.classList.add("btn");
+    if (transcriptUrl) {
+      transcriptDownloadBtn.onclick = function() {
+        download_func2(transcriptUrl, `${videofilename.split(".")[0]}.vtt`);
+      }
+      transcriptDownloadBtn.textContent = "Download Transcript";
+    } else {
+      transcriptDownloadBtn.classList.add("disabled");
+      transcriptDownloadBtn.onclick = function() {};
+      transcriptDownloadBtn.textContent = "Transcript Not Available";
     }
 
     let item = document.createElement("li");
-    item.appendChild(button);
-
+    let container = document.createElement("div");
+    container.classList.add("container");
+    container.appendChild(info);
+    container.appendChild(videoDownloadBtn);
+    container.appendChild(transcriptDownloadBtn);
+    item.appendChild(container);
     downloadList.appendChild(item);
   }
   mainFrame.appendChild(downloadList);
 }
 
-function download_func2(url) {
+function download_func2(url, filename=null) {
   log("initiate download", url);
-  const options = {
-    //filename: 'out.mp4',
+  let options = {
+    //filename: 'out.mp4', // this control the output filename in the dialog
     url: url,
     saveAs: true,
-    // TODO: do more experiments regarding this option
     //incognito: true, // this is needed to download in private browsing mode
-    //headers: [],
+
+    // tag the download so that our webrequest filter will replay with the saved headers
+    headers: [{name: "internal-download", value: "1"}],
     method: "GET"
+  }
+  if (filename) {
+    options["filename"] = filename;
   }
   browser.downloads.download(options, function(downloadId) {
     log(`download started with id ${downloadId}`)

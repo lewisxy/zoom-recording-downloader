@@ -5,6 +5,8 @@ function log(...objects) {
   // console.log(...objects);
 }
 
+const INTERNAL_HEADER = "internal-download";
+
 // persistent storage for the session
 // map from browser url to download info
 let data = {};
@@ -16,11 +18,16 @@ let record = {};
 // initialization (clear the data from previous sessions)
 browser.storage.local.set({"data": data});
 
+// similar things for transcript
+let transcriptData = {};
+let transcriptRecord = {};
+browser.storage.local.set({"transcriptData": transcriptData});
+
 // to make things simple, only background webrequest will commit changes
 // into "data" and all other scripts just read from it.
 // the data is cleared during initialization, and always in sync with "data"
 // variable in memory
-function saveActiveRequest(req, func) {
+function saveActiveRequest(data, record, dataName, req, func) {
   // only save headers and urls to save space
   const savedObject = {
     url: req.url,
@@ -42,7 +49,17 @@ function saveActiveRequest(req, func) {
   if (Object.keys(record).length !== Object.keys(data).length) {
     log("internal invarient check failed 2, something is wrong");
   }
-  browser.storage.local.set({"data": data}, func);
+  let tmp = {};
+  tmp[dataName] = data;
+  browser.storage.local.set(tmp, func);
+}
+
+function saveVideoDownloadRequest(req, func) {
+  saveActiveRequest(data, record, "data", req, func);
+}
+
+function saveTranscriptDownloadRequest(req, func) {
+  saveActiveRequest(transcriptData, transcriptRecord, "transcriptData", req, func);
 }
 
 function updateUI() {
@@ -64,23 +81,62 @@ browser.webRequest.onBeforeSendHeaders.addListener(
     log(details);
     if (details.type === "media") {
       // real request (sent from browser)
-      saveActiveRequest(details, function() {log("data updated")}); // don't care when will it finished.
+      saveVideoDownloadRequest(details, function() {log("data updated")}); // don't care when will it finished.
       updateUI();
     } else {
       // possibly the download request
-      let savedReqest = record[details.url];
-      if (!savedReqest) {
-        log(`cannot found saved request for url ${details.url}`);
-        return;
+      const tmp = ArrayToObject(details.requestHeaders);
+      if (INTERNAL_HEADER in tmp) {
+        log("found internal download flag");
+        let savedReqest = record[details.url];
+        if (!savedReqest) {
+          log(`cannot found saved request for url ${details.url}`);
+          return;
+        }
+        log("replay the previous request");
+        // overwrite range keyword
+        modifyHeader({range: "bytes=0-"}, savedReqest.requestHeaders);
+        return {requestHeaders: savedReqest.requestHeaders};
+      } else {
+        // we are not interested in other requests
+        log(`ignoring request ${details.requestId}`);
       }
-      log("replay the previous request");
-      // overwrite range keyword
-      modifyHeader({range: "bytes=0-"}, savedReqest.requestHeaders);
-      return {requestHeaders: savedReqest.requestHeaders};
     }
     // log(details);
   },
   {urls: ["https://ssrweb.zoom.us/*"]},
+  ["requestHeaders"/*, "extraHeaders"*/, "blocking"]
+);
+
+// also log transcript url
+browser.webRequest.onBeforeSendHeaders.addListener(
+  function(details) {
+    const url = new URL(details.url);
+    const params = new URLSearchParams(url.search);
+    if (params.get("type") === "transcript") {
+      const tmp = ArrayToObject(details.requestHeaders);
+      if (INTERNAL_HEADER in tmp) {
+        log("found internal download flag");
+        // download request, replay the record if possible
+        let savedReqest = transcriptRecord[details.url];
+        if (!savedReqest) {
+          log(`cannot found saved request for url ${details.url}`);
+          return;
+        }
+        log("replay the previous request");
+        return {requestHeaders: savedReqest.requestHeaders};
+      } else {
+        // normal request, record its data
+        log(`found transcript url ${details.url} for page ${details.originUrl}`);
+        saveTranscriptDownloadRequest(details, function() {log("transcript data updated")});
+        // updateUI();
+      }
+    } else {
+      // we are not interested in other requests
+      log(`ignoring request ${details.requestId}`);
+    }
+  },
+  {urls: ["https://*.zoom.us/rec/play/vtt", "https://*.zoom.us/rec/play/vtt?*"]},
   ["requestHeaders"/*, "extraHeaders"*/, "blocking"]
 );
 
